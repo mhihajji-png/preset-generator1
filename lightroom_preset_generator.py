@@ -291,17 +291,10 @@ def analyze_sharpness(image_path: str) -> dict:
         scale = 800 / max(w, h)
         img_gray = img_gray.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
 
-    # Application du filtre Laplacien
-    laplacian = img_gray.filter(ImageFilter.Kernel(
-        size=3,
-        kernel=[-1, -1, -1,
-                -1,  8, -1,
-                -1, -1, -1],
-        scale=1,
-        offset=128
-    ))
-
-    lap_array = np.array(laplacian, dtype=np.float32)
+    # Détection des contours via FIND_EDGES (compatible toutes versions Pillow)
+    # Equivalent fonctionnel du Laplacien : mesure les transitions de luminosité
+    edges     = img_gray.filter(ImageFilter.FIND_EDGES)
+    lap_array = np.array(edges, dtype=np.float32)
     variance  = float(np.var(lap_array))
 
     # Mapping variance → paramètres de netteté
